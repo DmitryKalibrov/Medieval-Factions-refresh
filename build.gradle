@@ -1,0 +1,214 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.7.0'
+    id 'maven-publish'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'nu.studer.jooq' version '7.1.1'
+    id 'org.jmailen.kotlinter' version '3.12.0'
+}
+
+group = "com.dansplugins"
+version = "5.6.0"
+
+def repoUsername = ""
+def repoPassword = ""
+def propertiesFile = new File("repo.properties")
+if (propertiesFile.exists()) {
+    def properties = new Properties()
+    properties.load(new FileInputStream(propertiesFile))
+    repoUsername = properties.getProperty("username")
+    repoPassword = properties.getProperty("password")
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/public/' }
+    maven { url 'https://oss.sonatype.org/content/groups/public/' }
+    maven { url 'https://repo.mikeprimm.com/' }
+    maven { url 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
+    maven { url 'https://jitpack.io' }
+    maven { url 'https://repo.maven.apache.org/maven2/' }
+    maven { url 'https://repo.rpkit.com/repository/maven-public/' }
+    maven { url 'https://repo.dansplugins.com/repository/maven-public/' }
+}
+
+configurations {
+    flywayMigration
+}
+
+dependencies {
+    implementation 'me.clip:placeholderapi:2.11.6'
+    implementation 'org.spigotmc:spigot-api:1.19.2-R0.1-SNAPSHOT'
+    implementation 'us.dynmap:dynmap-api:2.2'
+    implementation 'org.bstats:bstats-bukkit:3.0.0'
+    implementation platform("dev.forkhandles:forkhandles-bom:2.2.0.0")
+    implementation 'dev.forkhandles:result4k'
+    implementation 'org.jooq:jooq:3.17.4'
+    implementation 'org.flywaydb:flyway-core:9.4.0'
+    implementation 'org.flywaydb:flyway-mysql:9.4.0'
+    implementation 'org.mariadb.jdbc:mariadb-java-client:3.0.6'
+    implementation 'com.h2database:h2:2.1.214'
+    implementation 'com.zaxxer:HikariCP:5.0.1'
+    implementation 'com.google.code.gson:gson:2.9.0'
+    implementation 'org.slf4j:slf4j-api:1.8.0-beta4'
+    implementation 'com.github.Dans-Plugins:Mailboxes:v1.1'
+    implementation 'com.rpkit:rpk-core-bukkit:2.3.2:all'
+    implementation 'com.rpkit:rpk-player-lib-bukkit:2.3.2:all'
+    implementation 'com.rpkit:rpk-notification-lib-bukkit:2.3.2:all'
+    implementation 'com.rpkit:rpk-lock-lib-bukkit:2.3.2:all'
+    implementation 'com.dansplugins:ponder-bukkit:2.0.0'
+    implementation 'com.dansplugins:ponder-commands:2.0.0'
+    jooqGenerator 'org.jooq:jooq-meta-extensions:3.17.4'
+
+    // Use the Kotlin JUnit 5 integration.
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    testImplementation("org.mockito:mockito-core:4.0.0")
+    testImplementation("org.mockito:mockito-inline:4.0.0")
+
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+// Apply a specific Java toolchain to ease working on different environments.
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+// Настройка Gradle для использования Java 17
+gradle.projectsEvaluated {
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    }
+}
+
+tasks.named('check') {
+    dependsOn 'installKotlinterPrePushHook'
+}
+
+jooq {
+    configurations {
+        main {
+            generationTool {
+                logging = Logging.WARN
+                generator {
+                    name = 'org.jooq.codegen.DefaultGenerator'
+                    database {
+                        name = 'org.jooq.meta.extensions.ddl.DDLDatabase'
+                        inputSchema = 'PUBLIC'
+                        includes = '.*'
+                        excludes = ''
+                        properties {
+                            property {
+                                key = "scripts"
+                                value = "src/main/resources/com/dansplugins/factionsystem/db/migration"
+                            }
+                            property {
+                                key = "sort"
+                                value = "semantic"
+                            }
+                            property {
+                                key = "defaultNameCase"
+                                value = "lower"
+                            }
+                        }
+                    }
+                    target {
+                        packageName = 'com.dansplugins.factionsystem.jooq'
+                    }
+                }
+            }
+        }
+    }
+}
+
+import org.apache.tools.ant.filters.ReplaceTokens
+import org.jooq.meta.jaxb.Logging
+
+processResources {
+    filter ReplaceTokens, tokens: [
+            'version': version
+    ]
+}
+
+shadowJar {
+    mergeServiceFiles()
+    dependencies {
+        include(dependency('org.jetbrains.kotlin:kotlin-stdlib-jdk8'))
+        include(dependency('org.jetbrains.kotlin:kotlin-stdlib'))
+        include(dependency('org.jetbrains.kotlin:kotlin-stdlib-common'))
+        include(dependency('org.jetbrains:annotations'))
+        include(dependency('org.jetbrains.kotlin:kotlin-stdlib-jdk7'))
+        include(dependency('org.bstats:bstats-bukkit'))
+        include(dependency('org.bstats:bstats-base'))
+        include(dependency('dev.forkhandles:result4k'))
+        include(dependency('org.jooq:jooq'))
+        include(dependency('io.r2dbc:r2dbc-spi'))
+        include(dependency('org.reactivestreams:reactive-streams'))
+        include(dependency('jakarta.xml.bind:jakarta.xml.bind-api'))
+        include(dependency('com.sun.activation:jakarta.activation'))
+        include(dependency('org.flywaydb:flyway-core'))
+        include(dependency('org.flywaydb:flyway-mysql'))
+        include(dependency('org.mariadb.jdbc:mariadb-java-client'))
+        include(dependency('com.h2database:h2'))
+        include(dependency('com.zaxxer:HikariCP'))
+        include(dependency('com.google.code.gson:gson'))
+        include(dependency('com.dansplugins:ponder-bukkit'))
+        include(dependency('com.dansplugins:ponder-commands'))
+    }
+
+    relocate 'com.google', 'com.dansplugins.factionsystem.shadow.com.google'
+    relocate 'org.mariadb', 'com.dansplugins.factionsystem.shadow.org.mariadb'
+    relocate 'com.sun', 'com.dansplugins.factionsystem.shadow.com.sun'
+    relocate 'com.zaxxer', 'com.dansplugins.factionsystem.shadow.com.zaxxer'
+    relocate 'dev.forkhandles', 'com.dansplugins.factionsystem.shadow.dev.forkhandles'
+    relocate 'google', 'com.dansplugins.factionsystem.shadow.google'
+    relocate 'io.r2dbc', 'com.dansplugins.factionsystem.shadow.io.r2dbc'
+    relocate 'jakarta', 'com.dansplugins.factionsystem.shadow.jakarta'
+    relocate 'kotlin', 'com.dansplugins.factionsystem.shadow.kotlin'
+    relocate 'org.bstats', 'com.dansplugins.factionsystem.shadow.org.bstats'
+    relocate 'org.flywaydb', 'com.dansplugins.factionsystem.shadow.org.flywaydb'
+    relocate 'org.h2', 'com.dansplugins.factionsystem.shadow.org.h2'
+    relocate 'org.intellij', 'com.dansplugins.factionsystem.shadow.org.intellij'
+    relocate 'org.jetbrains', 'com.dansplugins.factionsystem.shadow.org.jetbrains'
+    relocate 'org.jooq', 'com.dansplugins.factionsystem.shadow.org.jooq'
+    relocate 'org.reactivestreams', 'com.dansplugins.factionsystem.shadow.org.reactivestreams'
+    relocate 'preponderous.ponder', 'com.dansplugins.factionsystem.shadow.preponderous.ponder'
+}
+
+artifacts {
+    archives shadowJar
+}
+
+publishing {
+    repositories {
+        maven {
+            credentials {
+                username repoUsername
+                password repoPassword
+            }
+            def releasesRepoUrl = "https://repo.dansplugins.com/repository/maven-releases/"
+            def snapshotsRepoUrl = "https://repo.dansplugins.com/repository/maven-snapshots/"
+            url = version.endsWith("SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
+        }
+    }
+    publications {
+        maven(MavenPublication) { publication ->
+            groupId = project.group
+            artifactId = project.name
+            version = project.version
+
+            from components.java
+        }
+    }
+}
+
+tasks.named('test') {
+    // Use JUnit Platform for unit tests.
+    useJUnitPlatform()
+}

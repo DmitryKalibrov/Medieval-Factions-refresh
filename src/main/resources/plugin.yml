@@ -1,0 +1,437 @@
+name: MedievalFactions
+authors:
+- DanTheTechMan
+- Pasarus
+- Caibinus
+- Callum
+- Richardhyy
+- Mitras2
+- Kaonami
+- GoodLucky777
+- Elafir
+- Deej
+- VoChiDanh
+- alyphen
+version: @version@
+main: com.dansplugins.factionsystem.MedievalFactions
+api-version: 1.17
+softdepend:
+- dynmap
+- PlaceholderAPI
+- rpk-notification-lib-bukkit
+- rpk-lock-lib-bukkit
+- rpk-selection-lib-bukkit
+- Mailboxes
+- Multiverse-Core
+description: Allows players to organise themselves into feudal, diplomatic, lawful groups akin to nations.
+commands:
+  faction:
+    description: |
+      Faction management command
+      /f ally [faction] - Ally with a faction
+      /f breakalliance [faction] - Break alliance with a faction
+      /f declarewar [faction] - Declares war on a faction
+      /f makepeace [faction] - Requests to make peace with a faction
+      /f create [name] - Create a faction with the given name
+      /f invite [player] - Invite a player to your faction
+      /f join [faction] - Joins a faction you have been invited to
+      /f law add [law] - Create a law for your faction
+      /f law list - List your faction's laws
+      /f law remove [id] - Remove a law from your faction
+      /f role view [role] - Views a role
+      /f role setpermission [role] [permission] [value] - Sets a permission for a role
+      /f role list - Lists roles
+      /f role set [player] [role] - Sets a player to a given role
+      /f role rename [name] (new name) - Renames a role
+      /f role setdefault [name] - Sets a role to be the default role
+      /f list - Lists factions
+      /f claim (radius) - Claims land
+      /f unclaim (radius) - Unclaims land
+      /f checkclaim - Checks who has claimed the chunk you are in
+      /f unclaimall - Unclaims all claimed land
+      /f power - Views power stats
+      /f who - Views a player's faction
+      /f disband - Disbands your faction
+      /f invoke [ally] [enemy] - Invokes a faction into war
+      /f leave - Leaves your faction
+      /f vassalize [faction] - Sends a vassalization request to a faction.
+      /f swearfealty [faction] - Swears fealty to a faction that has sent you a vassalization request
+      /f declareindependence - Declares independence from your current liege, triggering a war
+      /f grantindependence [vassal] - Grants independence to one of your vassals
+      /f kick (faction) [player] - Kicks a player from your faction, or the specified faction
+      /f map (normal|diplomatic) - Shows the faction map
+      /f sethome - Sets your faction's home
+      /f home - Teleports to your faction's home
+      /f flag [list|set] - Faction flag management
+      /f bypass - Toggles bypass mode
+      /f chat (faction|vassals|allies) - Toggles faction chat
+      /f set [name|description|prefix] (value) - Sets faction name/description/prefix
+      /f bonuspower [faction] [bonus power] - Sets faction bonus power
+      /f relationship add [faction1] [faction2] (relationship type) - Adds a relationship between two factions
+      /f relationship remove [faction1] [faction2] [relationship type] - Removes a relationship between two factions
+      /f relationship view [faction1] [faction2] - Views the relationship between two factions
+    aliases: [medievalfactions, mf, f, fraktion]
+    usage: /<command> [ally|breakalliance|declarewar|makepeace|create|invite|join|law|role|list|claim|unclaim|checkclaim|unclaimall|power|who|invoke|leave|vassalize|swearfealty|declareindependence|grantindependence|kick|map|sethome|home|flag|bypass|chat|set|bonuspower|relationship|team|admin team|kingroll]
+  lock:
+    description: Enables or disables lock mode. To cancel lock mode, use /lock cancel.
+    aliases: [verschlieBen, verschliessen, verrouiller]
+    usage: /<command> (cancel)
+  unlock:
+    description: Enables or disables unlock mode. To cancel unlock mode, use /unlock cancel.
+    aliases: [aufschlieBen, aufschliessen, deverrouiller, deverrouiller]
+    usage: /<command> (cancel)
+  accessors:
+    description: |
+      Accessor management command
+      /accessors list - View a list of people who can access a lock.
+      /accessors add - Add an accessor to a lock.
+      /accessors remove - Remove an accessor from a lock.
+    aliases: [accessoren, accesseurs]
+    usage: /<command> [list|add|remove]
+  power:
+    description: |
+      Power management command
+      /power set [player] [power] - Sets a player's power.
+    aliases: [macht, pouvoir]
+    usage: /<command> [set]
+  gate:
+    description: |
+      Gate management command
+      /gate create - Creates a gate
+      /gate remove - Removes a gate
+      /gate cancel - Cancels gate creation
+    aliases: [tor, portes]
+    usage: /<command> [create|remove|cancel]
+  duel:
+    description: |
+      Duel management command
+      /duel challenge [player] - Challenges a player to a duel
+      /duel accept [player] - Accepts a duel from a player
+      /duel cancel [player] - Cancels or turns down a duel
+    aliases: [duell]
+    usage: /<command> [challenge|accept|cancel]
+  apply:
+    description: Sends an application to a faction
+    usage: /<command> <faction>
+  showapps:
+    description: Shows the list of applications to your faction
+    usage: /<command>
+  approveapp:
+    description: Approves a player's application to your faction
+    usage: /<command> <player>
+  denyapp:
+    description: Denies a player's application to your faction
+    usage: /<command> <player>
+  economy:
+    description: |
+      Economy management commands
+      /economy balance [player] - View balance
+      /economy pay <player> <amount> - Send money
+      /economy top [limit] - Top players by balance
+    aliases: [money, eco]
+    usage: /<command> [balance|pay|top]
+permissions:
+  mf.guide:
+    description: Access the interactive gameplay guide
+    default: true
+  mf.team.join:
+    description: Allows joining teams (Red, Blue, Yellow)
+    default: true
+  mf.team.info:
+    description: Allows viewing team information
+    default: true
+  mf.team.list:
+    description: Allows listing team members
+    default: true
+  mf.team.flag:
+    description: Allows using team selection flag
+    default: true
+  mf.economy:
+    description: Access to economy commands
+    default: true
+  mf.economy.balance:
+    description: View balance
+    default: true
+  mf.economy.balance.other:
+    description: View other players balance
+    default: op
+  mf.economy.pay:
+    description: Send money to other players
+    default: true
+  mf.economy.top:
+    description: View top players by balance
+    default: true
+  mf.admin:
+    description: Allows administrative commands
+    default: op
+
+  mf.ally:
+    description: Allows allying with other factions
+    default: true
+  mf.breakalliance:
+    description: Allows breaking alliances with other factions
+    default: true
+  mf.create:
+    description: Allows the creation of factions
+    default: true
+  mf.declarewar:
+    description: Allows declaring war on other factions
+    default: true
+  mf.invite:
+    description: Allows inviting players to your faction
+    default: true
+  mf.join:
+    description: Allows joining factions
+    default: true
+  mf.addlaw:
+    description: Allows adding laws
+    default: true
+  mf.laws:
+    description: Allows listing the laws of your faction
+    default: true
+  mf.removelaw:
+    description: Allows removing laws
+    default: true
+  mf.makepeace:
+    description: Allows making peace with other factions
+    default: true
+  mf.info:
+    description: Allows viewing information about your faction
+    default: true
+  mf.info.other:
+    description: Allows viewing information about other players' factions
+    default: true
+  mf.members:
+    description: Allows viewing the members of a faction
+    default: true
+  mf.role.view:
+    description: Allows viewing roles
+    default: true
+  mf.role.list:
+    description: Allows listing roles
+    default: true
+  mf.role.setpermission:
+    description: Allows setting role permissions
+    default: true
+  mf.role.set:
+    description: Allows setting a faction member's role
+    default: true
+  mf.role.create:
+    description: Allows creating roles
+    default: true
+  mf.role.delete:
+    description: Allows deleting roles
+    default: true
+  mf.role.setdefault:
+    description: Allows setting the default role
+    default: true
+  mf.role.rename:
+    description: Allows renaming roles
+    default: true
+  mf.list:
+    description: Allows listing factions
+    default: true
+  mf.claim:
+    description: Allows claiming land
+    default: true
+  mf.claim.circle:
+    description: Allows claiming land in a circle
+    default: true
+  mf.claim.auto:
+    description: Allows toggling autoclaim for your faction
+    default: true
+  mf.claim.fill:
+    description: Allows filling a void enclosed by your claims
+    default: true
+  mf.claim.check:
+    description: Allows checking claims
+    default: true
+  mf.autoclaim:
+    description: Allows toggling autoclaim for your faction
+    default: true
+  mf.claimfill:
+    description: Allows filling a void enclosed by your claims
+    default: true
+  mf.checkclaim:
+    description: Allows checking claims
+    default: true
+  mf.unclaim:
+    description: Allows unclaiming land
+    default: true
+  mf.unclaimall:
+    description: Allows unclaiming all land
+    default: true
+  mf.power:
+    description: Allows viewing power
+    default: true
+  mf.power.view.other:
+    description: Allows viewing other player/faction power
+    default: true
+  mf.who:
+    description: Allows viewing which faction a player is part of
+    default: true
+  mf.disband:
+    description: Allows disbanding your faction
+    default: true
+  mf.disband.others:
+    description: Allows disbanding other factions
+    default: op
+  mf.invoke:
+    description: Allows invoking another faction into war
+    default: true
+  mf.leave:
+    description: Allows you to leave your faction
+    default: true
+  mf.rename:
+    description: Allows you to rename your faction
+    default: true
+  mf.desc:
+    description: Allows you to change your faction's description
+    default: true
+  mf.vassalize:
+    description: Allows sending vassalization requests
+    default: true
+  mf.swearfealty:
+    description: Allows swearing fealty to another faction
+    default: true
+  mf.declareindependence:
+    description: Allows declaring independence from your liege
+    default: true
+  mf.grantindependence:
+    description: Allows granting independence to a vassal
+    default: true
+  mf.lock:
+    description: Allows locking blocks
+    default: true
+  mf.unlock:
+    description: Allows unlocking blocks
+    default: true
+  mf.accessors.list:
+    description: Allows listing accessors for a locked block
+    default: true
+  mf.accessors.add:
+    description: Allows adding accessors to locked blocks
+    default: true
+  mf.grantaccess:
+    description: Allows adding accessors to locked blocks
+    default: true
+  mf.accessors.remove:
+    description: Allows removing accessors from locked blocks
+    default: true
+  mf.revokeaccess:
+    description: Allows removing accessors from locked blocks
+    default: true
+  mf.kick:
+    description: Allows kicking players from a faction
+    default: true
+  mf.map:
+    description: Allows showing the faction map
+    default: true
+  mf.power.set:
+    description: Allows setting player power
+    default: op
+  mf.sethome:
+    description: Allows you to set your faction's home location
+    default: true
+  mf.home:
+    description: Allows you to teleport to your faction's home location
+    default: true
+  mf.gate:
+    description: Allows gate management
+    default: true
+  mf.flag.list:
+    description: Allows listing faction flags
+    default: true
+  mf.flag.set:
+    description: Allows setting faction flags
+    default: true
+  mf.apply:
+    description: Allows applying to a faction
+    default: true
+  mf.bypass:
+    description: Allows bypassing faction protections
+    default: op
+  mf.chat:
+    description: Allows using faction chat
+    default: true
+  mf.chat.history:
+    description: Allows viewing chat history
+    default: true
+  mf.prefix:
+    description: Allows setting faction prefix
+    default: true
+  mf.duel:
+    description: Allows duelling
+    default: true
+  mf.showapps:
+    description: Shows the list of applications to your faction
+    default: true
+  mf.approveapp:
+    description: Approves a player's application to your faction
+    default: true
+  mf.denyapp:
+    description: Denies a player's application to your faction
+    default: true
+  mf.relationship.view:
+    description: Allows viewing faction relationships
+    default: op
+  mf.relationship.add:
+    description: Allows adding relationships to any faction
+    default: op
+  mf.relationship.remove:
+    description: Allows removing relationships from any faction
+    default: op
+  mf.force.join:
+    description: Allows joining a faction without being invited
+    default: op
+  mf.force.kick:
+    description: Allows kicking a member from another faction
+    default: op
+  mf.force.bonuspower:
+    description: Allows setting faction bonus power
+    default: op
+  mf.force.power:
+    description: Allows setting player power
+    default: op
+  mf.force.rename:
+    description: Allows forcing faction renames
+    default: op
+  mf.force.unlock:
+    description: Allows unlocking other players' locked blocks
+    default: op
+  mf.force.claim:
+    description: Allows claiming land for other factions
+    default: op
+  mf.force.unclaim:
+    description: Allows unclaiming land for other factions
+    default: op
+  mf.force.flag:
+    description: Allows setting flags for other factions
+    default: op
+  mf.force.addmember:
+    description: Allows forcefully adding a member to a faction.
+    default: op
+  mf.force.*:
+    description: Allows all force commands
+    default: op
+    children:
+    - mf.force.join
+    - mf.force.kick
+    - mf.force.bonuspower
+    - mf.force.power
+    - mf.force.rename
+    - mf.force.unlock
+    - mf.force.claim
+    - mf.force.unclaim
+    - mf.force.flag
+    - mf.force.addmember
+  mf.admin:
+    description: Admin permission
+    default: op
+    children:
+    - mf.force.*
+    - mf.bypass
+    - mf.relationship.view
+    - mf.relationship.add
+    - mf.relationship.remove
+    - mf.power.set
